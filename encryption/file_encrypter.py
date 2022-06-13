@@ -50,7 +50,7 @@ files = []
 
 # os.listdir() lists every file in cwd
 for file in os.listdir():
-    if file == "file_encrypter.py" or file == "my_key.key":
+    if file == "file_encrypter.py" or file == "my_key.key" or file == "file_decrypter.py":
         continue
 
     # if append file() where used here, every dir
@@ -58,7 +58,7 @@ for file in os.listdir():
     if os.path.isfile(file):
         files.append(file)
 
-print(files)
+print(f'Files to be encrypted: {files}')
 
 if key_setup():
     with open("my_key.key", "rb") as key:
