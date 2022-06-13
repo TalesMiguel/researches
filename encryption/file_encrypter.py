@@ -3,6 +3,7 @@
 import os
 from cryptography.fernet import Fernet
 
+
 """
 WARNING: This script encrypts every file at the Current Working Directory
 Use it at your own risk!
