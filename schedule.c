@@ -83,6 +83,18 @@ static void pick_cpu(struct schedproc * proc)
 }
 
 /*===========================================================================*
+ *				simple_rand				     *
+ rand e srand nao funcionam em tempo de compilacao, isto eh um workaround
+ para gerar numeros aleatorios
+ *===========================================================================*/
+
+unsigned int simple_rand() {
+    static unsigned int seed = 12345;
+    seed = (1103515245 * seed + 12345) % (1 << 31);
+    return seed;
+}
+
+/*===========================================================================*
  *				do_noquantum				     *
  *===========================================================================*/
 
