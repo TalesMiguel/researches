@@ -9,6 +9,8 @@
  */
 #include "sched.h"
 #include "schedproc.h"
+#include "stdlib.h"
+#include "time.h"
 #include <assert.h>
 #include <minix/com.h>
 #include <machine/archtypes.h>
@@ -84,27 +86,52 @@ static void pick_cpu(struct schedproc * proc)
  *				do_noquantum				     *
  *===========================================================================*/
 
-int do_noquantum(message *m_ptr)
-{
-	register struct schedproc *rmp;
-	int rv, proc_nr_n;
-
-	if (sched_isokendpt(m_ptr->m_source, &proc_nr_n) != OK) {
-		printf("SCHED: WARNING: got an invalid endpoint in OOQ msg %u.\n",
-		m_ptr->m_source);
-		return EBADEPT;
-	}
-
-	rmp = &schedproc[proc_nr_n];
-	if (rmp->priority < MIN_USER_Q) {
-		rmp->priority += 1; /* lower priority */
-	}
-
-	if ((rv = schedule_process_local(rmp)) != OK) {
-		return rv;
-	}
-	return OK;
-}
+ int do_noquantum(message *m_ptr)
+ {
+	 register struct schedproc *rmp;
+	 int rv, proc_nr_n, total_tickets = 0, winning_ticket, current_ticket = 0;
+	 struct schedproc *selected_proc = NULL;
+ 
+	 if (sched_isokendpt(m_ptr->m_source, &proc_nr_n) != OK) {
+		 printf("SCHED: WARNING: got an invalid endpoint in OOQ msg %u.\n",
+		 m_ptr->m_source);
+		 return EBADEPT;
+	 }
+ 
+	 // gerador de números aleatórios
+	 srand(time(NULL));
+ 
+	 // total de bilhetes
+	 for (int i = 0; i < NR_PROCS; i++) {
+		 if (schedproc[i].flags & IN_USE) {
+			 total_tickets += (MAX_USER_Q - schedproc[i].priority + 1); 
+		 }
+	 }
+ 
+	 // sorteia bilhete aleatório como vencedor
+	 winning_ticket = rand() % total_tickets;
+ 
+	 // encontra o processo vencedor
+	 for (int i = 0; i < NR_PROCS; i++) {
+		 if (schedproc[i].flags & IN_USE) {
+			 current_ticket += (MAX_USER_Q - schedproc[i].priority + 1);
+			 if (current_ticket > winning_ticket) {
+				 selected_proc = &schedproc[i];
+				 break;
+			 }
+		 }
+	 }
+ 
+	 // escalona o processo sorteado
+	 if (selected_proc != NULL) {
+		 if ((rv = schedule_process_local(selected_proc)) != OK) {
+			 return rv;
+		 }
+	 }
+ 
+	 return OK;
+ }
+ 
 
 /*===========================================================================*
  *				do_stop_scheduling			     *
